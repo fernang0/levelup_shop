@@ -56,20 +56,20 @@ public class PagoController {
                        "<p>Monto: $" + response.amount() + "</p>" +
                        "<p>Código autorización: " + response.authorizationCode() + "</p>" +
                        "<p>Tu pedido ha sido pagado correctamente.</p>" +
-                       "<a href='http://localhost:5173'>Volver a la tienda</a>" +
+                       "<a href='https://dsy-1104-henriquez-orellana-git-henriquezev3-fernang0s-projects.vercel.app'>Volver a la tienda</a>" +
                        "</body></html>";
             } else {
                 return "<html><body>" +
                        "<h1>❌ Pago Rechazado</h1>" +
                        "<p>Estado: " + response.status() + "</p>" +
-                       "<a href='http://localhost:5173'>Volver a la tienda</a>" +
+                       "<a href='https://dsy-1104-henriquez-orellana-git-henriquezev3-fernang0s-projects.vercel.app'>Volver a la tienda</a>" +
                        "</body></html>";
             }
         } catch (Exception e) {
             return "<html><body>" +
                    "<h1>⚠️ Error en el pago</h1>" +
                    "<p>" + e.getMessage() + "</p>" +
-                   "<a href='http://localhost:5173'>Volver a la tienda</a>" +
+                   "<a href='https://dsy-1104-henriquez-orellana-git-henriquezev3-fernang0s-projects.vercel.app'>Volver a la tienda</a>" +
                    "</body></html>";
         }
     }
