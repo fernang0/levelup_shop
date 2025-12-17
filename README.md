@@ -2,75 +2,155 @@
 
 API REST para tienda online con Spring Boot, MariaDB y Transbank.
 
-## Requisitos
+## 🚀 Endpoints Principales
 
-- Java 17+
-- MariaDB 12+
-- Gradle 9+
+### 🔐 Autenticación (`/api/v1/auth`)
 
-## Configuración
+| Método | Endpoint | Descripción | Requiere Auth |
+|--------|----------|-------------|---------------|
+| POST | `/register` | Registrar nuevo usuario | ❌ |
+| POST | `/login` | Iniciar sesión | ❌ |
+| GET | `/me` | Obtener usuario actual | ✅ |
 
-1. Copia el archivo de ejemplo de variables de entorno:
-```bash
-cp .env.example .env
+**Ejemplo POST `/auth/register`:**
+```json
+{
+  "nombre": "Juan Pérez",
+  "email": "juan@ejemplo.com",
+  "password": "password123",
+  "telefono": "+56912345678",
+  "direccion": "Av. Ejemplo 123"
+}
 ```
 
-2. Edita `.env` con tus credenciales:
-```env
-DB_PASSWORD=tu_password
-JWT_SECRET=tu_secret_key_muy_larga_y_segura
-TRANSBANK_COMMERCE_CODE=tu_codigo
-TRANSBANK_API_KEY=tu_api_key
+**Ejemplo POST `/auth/login`:**
+```json
+{
+  "email": "juan@ejemplo.com",
+  "password": "password123"
+}
 ```
 
-3. Crea la base de datos:
-```sql
-CREATE DATABASE levelup_shop;
+---
+
+### 📦 Productos (`/api/v1/productos`)
+
+| Método | Endpoint | Descripción | Requiere Auth |
+|--------|----------|-------------|---------------|
+| GET | `/` | Listar productos activos | ❌ |
+| GET | `/?categoria={code}` | Filtrar por categoría | ❌ |
+| GET | `/?search={keyword}` | Buscar productos | ❌ |
+| GET | `/{id}` | Obtener producto por ID | ❌ |
+| GET | `/codigo/{code}` | Obtener por código (ej: JM001) | ❌ |
+| GET | `/categoria/{categoriaCode}` | Filtrar por categoría (AC, CG, CO, JM, MP, MS, PP, SG) | ❌ |
+
+---
+
+### 🗂️ Categorías (`/api/v1/categorias`)
+
+| Método | Endpoint | Descripción | Requiere Auth |
+|--------|----------|-------------|---------------|
+| GET | `/` | Listar todas las categorías | ❌ |
+| GET | `/{id}` | Obtener categoría por ID | ❌ |
+
+---
+
+### 🛒 Carrito (`/api/v1/carrito`)
+
+| Método | Endpoint | Descripción | Requiere Auth |
+|--------|----------|-------------|---------------|
+| GET | `/` | Obtener carrito activo | ✅ |
+| POST | `/items` | Agregar producto al carrito | ✅ |
+| PUT | `/items/{itemId}?cantidad={n}` | Actualizar cantidad | ✅ |
+| DELETE | `/items/{itemId}` | Eliminar item del carrito | ✅ |
+| DELETE | `/` | Vaciar carrito | ✅ |
+
+**Ejemplo POST `/carrito/items`:**
+```json
+{
+  "productoId": 1,
+  "cantidad": 2
+}
 ```
 
-4. Ejecuta el script SQL de inicialización (si existe)
+---
 
-## Variables de Entorno Requeridas
+### 📋 Pedidos (`/api/v1/pedidos`)
 
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `DB_URL` | URL de la base de datos | `jdbc:mariadb://localhost:3306/levelup_shop` |
-| `DB_USERNAME` | Usuario de la base de datos | `root` |
-| `DB_PASSWORD` | **Contraseña de la base de datos** | - |
-| `JWT_SECRET` | **Secreto para firmar JWT tokens** | - |
-| `JWT_EXPIRATION` | Tiempo de expiración del token (ms) | `86400000` |
-| `TRANSBANK_ENVIRONMENT` | Ambiente Transbank | `INTEGRACION` o `PRODUCCION` |
-| `TRANSBANK_COMMERCE_CODE` | **Código de comercio Transbank** | - |
-| `TRANSBANK_API_KEY` | **API Key de Transbank** | - |
-| `TRANSBANK_RETURN_URL` | URL de retorno después del pago | `http://localhost:8080/api/v1/pagos/confirmar` |
+| Método | Endpoint | Descripción | Requiere Auth |
+|--------|----------|-------------|---------------|
+| GET | `/` | Listar pedidos del usuario | ✅ |
+| GET | `/{id}` | Obtener detalle de pedido | ✅ |
+| POST | `/` | Crear pedido desde carrito | ✅ |
 
-## Ejecutar
-
-```bash
-./gradlew bootRun
+**Ejemplo POST `/pedidos`:**
+```json
+{
+  "direccionEnvio": "Av. Ejemplo 123, Santiago"
+}
 ```
 
-La aplicación estará disponible en: http://localhost:8080
+---
 
-## Documentación API
+### 💳 Pagos (`/api/v1/pagos`)
 
-Swagger UI: http://localhost:8080/swagger-ui.html
+| Método | Endpoint | Descripción | Requiere Auth |
+|--------|----------|-------------|---------------|
+| POST | `/iniciar` | Iniciar transacción Transbank | ✅ |
+| POST/GET | `/confirmar?token_ws={token}` | Callback de Transbank (automático) | ❌ |
+| GET | `/estado/{token}` | Consultar estado de transacción | ✅ |
 
-## Endpoints Principales
+**Ejemplo POST `/pagos/iniciar`:**
+```json
+{
+  "pedidoId": 1
+}
+```
 
-- `POST /api/v1/auth/register` - Registro de usuario
-- `POST /api/v1/auth/login` - Login
-- `GET /api/v1/productos` - Listar productos
-- `POST /api/v1/carrito/items` - Agregar al carrito
-- `POST /api/v1/pedidos/desde-carrito` - Crear pedido
-- `POST /api/v1/pagos/iniciar` - Iniciar pago Transbank
+**Respuesta:**
+```json
+{
+  "token": "01ab57abbd6106de2bd64ca88eb35e1dee85f03f...",
+  "url": "https://webpay3gint.transbank.cl/webpayserver/initTransaction"
+}
+```
 
-## Seguridad
+---
 
-⚠️ **NUNCA subas el archivo `.env` a Git**
+## 🔑 Autenticación
 
-El archivo `.gitignore` ya está configurado para ignorar:
-- `.env`
-- `application-local.properties`
-- Credenciales sensibles
-# levelup_shop
+Los endpoints marcados con ✅ requieren JWT Bearer token en el header:
+
+```
+Authorization: Bearer {tu_token_jwt}
+```
+
+El token se obtiene al hacer login o registro exitoso.
+
+---
+
+## ⚙️ Configuración
+
+### Variables de Entorno
+
+| Variable | Descripción | Valor por Defecto |
+|----------|-------------|-------------------|
+| `SPRING_DATASOURCE_URL` | URL de base de datos | `jdbc:mariadb://localhost:3306/levelup_shop` |
+| `SPRING_DATASOURCE_USERNAME` | Usuario DB | `root` |
+| `SPRING_DATASOURCE_PASSWORD` | Contraseña DB | - |
+| `JWT_SECRET` | Secret para JWT | - |
+| `JWT_EXPIRATION` | Expiración token (ms) | `86400000` |
+| `TRANSBANK_ENVIRONMENT` | Ambiente Transbank | `INTEGRACION` |
+| `TRANSBANK_COMMERCE_CODE` | Código de comercio | - |
+| `TRANSBANK_API_KEY` | API Key Transbank | - |
+| `TRANSBANK_RETURN_URL` | URL de retorno post-pago | `http://ec2-44-200-28-175.compute-1.amazonaws.com:8080/api/v1/pagos/confirmar` |
+
+---
+
+## 📚 Documentación Swagger
+
+Accede a la documentación interactiva en:
+
+```
+http://localhost:8080/swagger-ui.html
+```
